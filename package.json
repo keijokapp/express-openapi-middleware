@@ -1,0 +1,20 @@
+{
+  "name": "express-openapi-middleware",
+  "version": "0.0.1",
+  "description": "Yet another tool to integrate ExpressJS and OpenAPI",
+  "main": "index.js",
+  "author": "Keijo Kapp <keijo.kapp@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "test": "mocha test"
+  },
+  "dependencies": {
+    "jsonschema": "^1.2.4"
+  },
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "express": "^4.16.3",
+    "mocha": "^5.2.0",
+    "supertest": "^3.1.0"
+  }
+}
