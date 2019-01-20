@@ -73,13 +73,13 @@ function regexpToPath(regexp, keys = []) {
 
 
 /**
- * Iterates through all layers in router
+ * Traverses through all layers in router
  * @param router {Router}
  * @param out {object}
  * @param routePrefix {string}
- * @param middlewares {function[]}
+ * @param apiOperations {object}
  */
-function iterateRouter(router, out, routePrefix = '', middlewares = []) {
+function traverseRouter(router, out = {}, routePrefix = '', apiOperations = {}) {
 	for(const layer of router.stack) {
 		let path;
 		try {
@@ -88,23 +88,45 @@ function iterateRouter(router, out, routePrefix = '', middlewares = []) {
 			// ignored silently
 			continue;
 		}
+
 		if(layer.route) {
-			if(!(path in out)) {
-				out[path] = {};
-			}
-			for(const routeLayer of layer.route.stack) {
-				const method = routeLayer.method;
-				if(!(method in out[path])) {
-					out[path][method] = middlewares.slice();
+
+			let operation = {};
+
+			for(const i in apiOperations) {
+				if(path === i || path.startsWith(i + '/')) {
+					for(const m of apiOperations[i]) {
+						operation = mergeOperationObjects(operation, m.apiOperation);
+					}
 				}
-				out[path][method].push(routeLayer.handle);
 			}
+
+			for(const routeLayer of layer.route.stack) {
+				if('apiOperation' in routeLayer.handle) {
+					if(!(path in out)) {
+						out[path] = {};
+					}
+
+					if(!(routeLayer.method in out[path])) {
+						out[path][routeLayer.method] = mergeOperationObjects(operation, routeLayer.handle.apiOperation);
+					}
+				}
+			}
+
 		} else if(layer.name === 'router') {
-			iterateRouter(layer.handle, out, path, middlewares);
+			traverseRouter(layer.handle, out, path, apiOperations);
 		} else {
-			middlewares = middlewares.concat([layer.handle]);
+			if('apiOperation' in layer.handle) {
+				if(!(path in apiOperations)) {
+					apiOperations[path] = [];
+				}
+
+				apiOperations[path].push(layer.handle);
+			}
 		}
 	}
+
+	return out;
 }
 
 
@@ -215,34 +237,7 @@ function mergeOperationObjects(spec, moreSpec) {
  * @returns {object} OpenAPI paths object
  */
 function createPaths(router) {
-	const paths = {};
-	const routes = {};
-	iterateRouter(router, routes);
-	for(let path in routes) {
-		if(routes.hasOwnProperty(path)) {
-			for(const method in routes[path]) {
-				if(routes[path].hasOwnProperty(method)) {
-					for(const middleware of routes[path][method]) {
-						if('apiOperation' in middleware) {
-							if(!path) {
-								path = '/';
-							}
-							if(!(path in paths)) {
-								paths[path] = {};
-							}
-							if(method in paths[path]) {
-								paths[path][method] = mergeOperationObjects(paths[path][method], middleware.apiOperation);
-							} else {
-								paths[path][method] = middleware.apiOperation;
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
-	return paths;
+	return traverseRouter(router);
 }
 
 
