@@ -146,21 +146,22 @@ function apiOperation(operation) {
 					validations.push({parameter, validation: 'missing'});
 				}
 			}
-			if('requestBody' in operation) {
-				if('body' in req) {
-					if('content' in operation.requestBody && 'application/json' in operation.requestBody.content && 'schema' in operation.requestBody.content['application/json']) {
-						const validationResult = validator.validate(req.body, operation.requestBody.content['application/json'].schema, {
-							nestedErrors: true,
-							propertyName: 'body'
-						});
-						if(!validationResult.valid) {
-							delete validationResult.disableFormat;
-							validations.push({ parameter: operation.requestBody, validation: validationResult });
-						}
+		}
+
+		if('requestBody' in operation) {
+			if('body' in req) {
+				if('content' in operation.requestBody && 'application/json' in operation.requestBody.content && 'schema' in operation.requestBody.content['application/json']) {
+					const validationResult = validator.validate(req.body, operation.requestBody.content['application/json'].schema, {
+						nestedErrors: true,
+						propertyName: 'body'
+					});
+					if(!validationResult.valid) {
+						delete validationResult.disableFormat;
+						validations.push({ parameter: operation.requestBody, validation: validationResult });
 					}
-				} else if(operation.requestBody['application/json'].required) {
-					validations.push({ parameter: operation.requestBody, validation: 'missing' });
 				}
+			} else if(operation.requestBody.required) {
+				validations.push({ parameter: operation.requestBody, validation: 'missing' });
 			}
 		}
 
