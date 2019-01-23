@@ -74,64 +74,6 @@ function regexpToPath(regexp, keys = []) {
 
 
 /**
- * Traverses through all layers in router
- * @param router {Router}
- * @param out {object}
- * @param routePrefix {string}
- * @param apiOperations {object}
- */
-function traverseRouter(router, out = {}, routePrefix = '', apiOperations = {}) {
-	for(const layer of router.stack) {
-		let path;
-		try {
-			path = routePrefix + regexpToPath(layer.regexp, layer.keys);
-		} catch(e) {
-			// ignored silently
-			continue;
-		}
-
-		if(layer.route) {
-
-			let operation = {};
-
-			for(const i in apiOperations) {
-				if(path === i || path.startsWith(i + '/')) {
-					for(const m of apiOperations[i]) {
-						operation = mergeOperationObjects(operation, m.apiOperation);
-					}
-				}
-			}
-
-			for(const routeLayer of layer.route.stack) {
-				if('apiOperation' in routeLayer.handle) {
-					if(!(path in out)) {
-						out[path] = {};
-					}
-
-					if(!(routeLayer.method in out[path])) {
-						out[path][routeLayer.method] = mergeOperationObjects(operation, routeLayer.handle.apiOperation);
-					}
-				}
-			}
-
-		} else if(layer.name === 'router') {
-			traverseRouter(layer.handle, out, path, apiOperations);
-		} else {
-			if('apiOperation' in layer.handle) {
-				if(!(path in apiOperations)) {
-					apiOperations[path] = [];
-				}
-
-				apiOperations[path].push(layer.handle);
-			}
-		}
-	}
-
-	return out;
-}
-
-
-/**
  * Creates middleware representing
  * OpenAPI operation
  * @param operation {object} OpenAPI operation object
@@ -195,14 +137,61 @@ function mergeOperationObjects(spec, moreSpec) {
 
 
 /**
- * Iterates through all routes in router
- * looking for OpenAPI middlewares
- * and creates OpenAPI paths object
+ * Traverses through all layers in router
  * @param router {Router} Express-compatible router
- * @returns {object} OpenAPI paths object
+ * @param out {object?} paths object to be filled with API operation objects
+ * @param routePrefix {string?} route prefix of scanned router without trailing slash
+ * @param apiOperations {object?} map of "path" to "list of active middlewares" on this path
+ * @return {object} paths object
  */
-function createPaths(router) {
-	return traverseRouter(router);
+function createPaths(router, out = {}, routePrefix = '', apiOperations = {}) {
+	for(const layer of router.stack) {
+		let path;
+		try {
+			path = routePrefix + regexpToPath(layer.regexp, layer.keys);
+		} catch(e) {
+			// ignored silently
+			continue;
+		}
+
+		if(layer.route) {
+
+			let operation = {};
+
+			for(const i in apiOperations) {
+				if(path === i || path.startsWith(i + '/')) {
+					for(const m of apiOperations[i]) {
+						operation = mergeOperationObjects(operation, m.apiOperation);
+					}
+				}
+			}
+
+			for(const routeLayer of layer.route.stack) {
+				if('apiOperation' in routeLayer.handle) {
+					if(!(path in out)) {
+						out[path] = {};
+					}
+
+					if(!(routeLayer.method in out[path])) {
+						out[path][routeLayer.method] = mergeOperationObjects(operation, routeLayer.handle.apiOperation);
+					}
+				}
+			}
+
+		} else if(layer.name === 'router') {
+			createPaths(layer.handle, out, path, apiOperations);
+		} else {
+			if('apiOperation' in layer.handle) {
+				if(!(path in apiOperations)) {
+					apiOperations[path] = [];
+				}
+
+				apiOperations[path].push(layer.handle);
+			}
+		}
+	}
+
+	return out;
 }
 
 
