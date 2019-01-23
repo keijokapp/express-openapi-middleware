@@ -227,28 +227,10 @@ describe('validation', () => {
 		it('should fail with bad path parameter', async () => {
 			const res = await request.get('/with-path-parameter/ab').expect(400);
 			expect(res.body).to.deep.equal([{
-				parameter: {
-					in: 'path',
-					name: 'something',
-					schema: {
-						minLength: 3,
-						type: 'string'
-					}
-				},
-				validation: {
-					errors: [{
-						argument: 3,
-						instance: 'ab',
-						message: 'does not meet minimum length of 3',
-						name: 'minLength',
-						property: 'something',
-						schema: { type: 'string', minLength: 3 },
-						stack: 'something does not meet minimum length of 3'
-					}],
-					instance: 'ab',
-					propertyPath: 'something',
-					schema: { type: 'string', minLength: 3 }
-				}
+				errorCode: 'minLength.openapi.validation',
+				location: 'path',
+				message: 'should NOT be shorter than 3 characters',
+				path: 'something'
 			}]);
 		});
 
@@ -263,40 +245,20 @@ describe('validation', () => {
 		it('should fail with missing required header', async () => {
 			const res = await request.get('/with-required-header').expect(400);
 			expect(res.body).to.deep.equal([{
-				parameter: {
-					in: 'header',
-					name: 'x-something',
-					required: true,
-					schema: { type: 'string', minLength: 3 }
-				},
-				validation: 'missing'
+				errorCode: 'required.openapi.validation',
+				location: 'headers',
+				message: 'should have required property \'x-something\'',
+				path: 'x-something'
 			}]);
 		});
 
 		it('should fail with bad optional header', async () => {
 			const res = await request.get('/with-optional-header').set('x-something', '').expect(400);
 			expect(res.body).to.deep.equal([{
-				parameter: {
-					in: 'header',
-					name: 'x-something',
-					schema: {
-						minLength: 3,
-						type: 'string'
-					}
-				},
-				validation: {
-					errors: [{
-						argument: 3,
-						message: 'does not meet minimum length of 3',
-						name: 'minLength',
-						property: 'x-something',
-						schema: { type: 'string', minLength: 3 },
-						stack: 'x-something does not meet minimum length of 3'
-					}],
-					instance: '',
-					propertyPath: 'x-something',
-					schema: { type: 'string', minLength: 3 }
-				}
+				errorCode: 'minLength.openapi.validation',
+				location: 'headers',
+				message: 'should NOT be shorter than 3 characters',
+				path: '[\'x-something\']'
 			}]);
 		});
 
@@ -316,41 +278,20 @@ describe('validation', () => {
 		it('should fail with missing required query parameter', async () => {
 			const res = await request.get('/with-required-query-parameter').expect(400);
 			expect(res.body).to.deep.equal([{
-				parameter: {
-					in: 'query',
-					name: 'something',
-					required: true,
-					schema: { type: 'string', minLength: 3 }
-				},
-				validation: 'missing'
+				errorCode: 'required.openapi.validation',
+				location: 'query',
+				message: 'should have required property \'something\'',
+				path: 'something'
 			}]);
 		});
 
 		it('should fail with bad optional query parameter', async () => {
 			const res = await request.get('/with-optional-query-parameter?something=a').expect(400);
 			expect(res.body).to.deep.equal([{
-				parameter: {
-					in: 'query',
-					name: 'something',
-					schema: {
-						minLength: 3,
-						type: 'string'
-					}
-				},
-				validation: {
-					errors: [{
-						argument: 3,
-						instance: 'a',
-						message: 'does not meet minimum length of 3',
-						name: 'minLength',
-						property: 'something',
-						schema: { type: 'string', minLength: 3 },
-						stack: 'something does not meet minimum length of 3'
-					}],
-					instance: 'a',
-					propertyPath: 'something',
-					schema: { type: 'string', minLength: 3 }
-				}
+				errorCode: 'minLength.openapi.validation',
+				location: 'query',
+				message: 'should NOT be shorter than 3 characters',
+				path: 'something'
 			}]);
 		});
 
@@ -388,52 +329,20 @@ describe('validation', () => {
 		it('should fail at first middleware', async () => {
 			const res = await request.get('/nested-root/ab/nested-route/ghijklm').expect(400);
 			expect(res.body).to.deep.equal([{
-				parameter: {
-					in: 'path',
-					name: 'something',
-					required: true,
-					schema: { type: 'string', minLength: 3 }
-				},
-				validation: {
-					errors: [{
-						argument: 3,
-						instance: 'ab',
-						message: 'does not meet minimum length of 3',
-						name: 'minLength',
-						property: 'something',
-						schema: { type: 'string', minLength: 3 },
-						stack: 'something does not meet minimum length of 3'
-					}],
-					instance: 'ab',
-					propertyPath: 'something',
-					schema: { type: 'string', minLength: 3 }
-				}
+				errorCode: 'minLength.openapi.validation',
+				location: 'path',
+				message: 'should NOT be shorter than 3 characters',
+				path: 'something'
 			}]);
 		});
 
 		it('should fail at second middleware', async () => {
 			const res = await request.get('/nested-root/abcdef/nested-route/g').expect(400);
 			expect(res.body).to.deep.equal([{
-				parameter: {
-					in: 'path',
-					name: 'something_else',
-					required: true,
-					schema: { type: 'string', minLength: 3 }
-				},
-				validation: {
-					errors: [{
-						argument: 3,
-						instance: 'g',
-						message: 'does not meet minimum length of 3',
-						name: 'minLength',
-						property: 'something_else',
-						schema: { type: 'string', minLength: 3 },
-						stack: 'something_else does not meet minimum length of 3'
-					}],
-					instance: 'g',
-					propertyPath: 'something_else',
-					schema: { type: 'string', minLength: 3 }
-				}
+				errorCode: 'minLength.openapi.validation',
+				location: 'path',
+				message: 'should NOT be shorter than 3 characters',
+				path: 'something_else'
 			}]);
 		});
 

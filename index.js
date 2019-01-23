@@ -1,4 +1,4 @@
-const Validator = require('jsonschema').Validator;
+const OpenAPIRequestValidator = require('openapi-request-validator').default;
 
 
 /**
@@ -137,58 +137,22 @@ function traverseRouter(router, out = {}, routePrefix = '', apiOperations = {}) 
  * @returns {function} Middleware function
  */
 function apiOperation(operation) {
-	const validator = new Validator();
 
-	const sources = {
-		header: 'headers',
-		path: 'params',
-		query: 'query',
-		cookie: 'cookies'
+	const op = {
+		parameters: operation.parameters !== undefined ? operation.parameters : [],
+		requestBody: operation.requestBody
 	};
 
+	const validator = new OpenAPIRequestValidator(op);
+
 	const middleware = function(req, res, next) {
+
 		req.apiOperation = operation;
-		const validations = [];
-		if('parameters' in operation) {
-			for(const parameter of operation.parameters) {
-				const parameterName = parameter.name;
-				const parameterSource = sources[parameter.in];
-				if(parameterSource && parameterSource in req && parameterName in req[parameterSource]) {
-					if('schema' in parameter) {
-						const validationResult = validator.validate(req[parameterSource][parameterName], parameter.schema, {
-							nestedErrors: true,
-							propertyName: parameter.name
-						});
-						if(!validationResult.valid) {
-							delete validationResult.disableFormat;
-							validations.push({parameter, validation: validationResult});
-						}
-					}
-				} else if(parameter.required) {
-					validations.push({parameter, validation: 'missing'});
-				}
-			}
-		}
 
-		if('requestBody' in operation) {
-			if('body' in req) {
-				if('content' in operation.requestBody && 'application/json' in operation.requestBody.content && 'schema' in operation.requestBody.content['application/json']) {
-					const validationResult = validator.validate(req.body, operation.requestBody.content['application/json'].schema, {
-						nestedErrors: true,
-						propertyName: 'body'
-					});
-					if(!validationResult.valid) {
-						delete validationResult.disableFormat;
-						validations.push({ parameter: operation.requestBody, validation: validationResult });
-					}
-				}
-			} else if(operation.requestBody.required) {
-				validations.push({ parameter: operation.requestBody, validation: 'missing' });
-			}
-		}
+		const error = validator.validate(req);
 
-		if(Object.keys(validations).length) {
-			next(new OpenAPIValidation(validations));
+		if(error) {
+			next(new OpenAPIValidation(error.errors));
 		} else {
 			next();
 		}
