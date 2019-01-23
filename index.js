@@ -64,7 +64,7 @@ function regexpToPath(regexp, keys = []) {
 				scanIndex = nextSlash;
 			}
 		} else {
-			throw new Error('Bad input: Unexpected character "' + regexp[scanIndex] + "' at position " + scanIndex);
+			throw new Error('Bad input: Unexpected character "' + regexp[scanIndex] + '" at position ' + scanIndex);
 		}
 	}
 
