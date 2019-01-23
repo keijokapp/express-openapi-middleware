@@ -4,12 +4,13 @@ const OpenAPIRequestValidator = require('openapi-request-validator').default;
 /**
  * OpenAPI request validation error
  */
-class OpenAPIValidation extends Error {
-	constructor(validations) {
+class OpenAPIValidationError extends Error {
+	constructor(errors, status = 400) {
 		super();
-		this.name = 'OpenAPIValidation';
-		this.nessage = 'express-openapi-middleware: Invalid data found';
-		this.validations = validations;
+		this.name = 'OpenAPIValidationError';
+		this.nessage = 'OpenAPIValidationError: Invalid data found';
+		this.errors = errors;
+		this.status = status;
 	}
 }
 
@@ -152,7 +153,7 @@ function apiOperation(operation) {
 		const error = validator.validate(req);
 
 		if(error) {
-			next(new OpenAPIValidation(error.errors));
+			next(new OpenAPIValidationError(error.errors, error.status));
 		} else {
 			next();
 		}
@@ -207,5 +208,6 @@ function createPaths(router) {
 
 module.exports = {
 	apiOperation,
-	createPaths
+	createPaths,
+	OpenAPIValidationError
 };

@@ -201,8 +201,8 @@ app.use((req, res, next) => {
 });
 
 app.use((e, req, res, next) => {
-	if(e.name === 'OpenAPIValidation') {
-		res.status(400).send(e.validations);
+	if(e.name === 'OpenAPIValidationError') {
+		res.status(e.status).send(e.errors);
 	} else {
 		throw e;
 	}
@@ -318,6 +318,13 @@ describe('validation', () => {
 			}]);
 		});
 
+		it('should fail with bad media type', async () => {
+			const res = await request.put('/with-body').set('content-type', 'text/html').send('abcdef').expect(415);
+			expect(res.body).to.deep.equal([{
+				message: 'Unsupported Content-Type text/html'
+			}]);
+		});
+
 	});
 
 	describe('nested routes', () => {
@@ -347,6 +354,7 @@ describe('validation', () => {
 		});
 
 	});
+
 });
 
 
