@@ -92,7 +92,7 @@ function apiOperation(operation) {
 
 		req.apiOperation = operation;
 
-		const error = validator.validate(req);
+		const error = validator.validateRequest(req);
 
 		if(error) {
 			next(new OpenAPIValidationError(error.errors, error.status));
