@@ -8,7 +8,7 @@ class OpenAPIValidationError extends Error {
 	constructor(errors, status = 400) {
 		super();
 		this.name = 'OpenAPIValidationError';
-		this.nessage = 'OpenAPIValidationError: Invalid data found';
+		this.message = 'OpenAPIValidationError: Invalid data found';
 		this.errors = errors;
 		this.status = status;
 	}
