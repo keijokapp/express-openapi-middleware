@@ -1,6 +1,6 @@
 {
   "name": "express-openapi-middleware",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Yet another tool to integrate ExpressJS and OpenAPI",
   "main": "index.js",
   "author": "Keijo Kapp <keijo.kapp@gmail.com>",
