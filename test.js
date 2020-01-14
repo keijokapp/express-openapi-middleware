@@ -227,7 +227,7 @@ describe('validation', () => {
 		it('should fail with bad path parameter', async () => {
 			const res = await request.get('/with-path-parameter/ab').expect(400);
 			expect(res.body).to.deep.equal([{
-				errorCode: 'minLength.openapi.validation',
+				errorCode: 'minLength.openapi.requestValidation',
 				location: 'path',
 				message: 'should NOT be shorter than 3 characters',
 				path: 'something'
@@ -245,7 +245,7 @@ describe('validation', () => {
 		it('should fail with missing required header', async () => {
 			const res = await request.get('/with-required-header').expect(400);
 			expect(res.body).to.deep.equal([{
-				errorCode: 'required.openapi.validation',
+				errorCode: 'required.openapi.requestValidation',
 				location: 'headers',
 				message: 'should have required property \'x-something\'',
 				path: 'x-something'
@@ -255,7 +255,7 @@ describe('validation', () => {
 		it('should fail with bad optional header', async () => {
 			const res = await request.get('/with-optional-header').set('x-something', '').expect(400);
 			expect(res.body).to.deep.equal([{
-				errorCode: 'minLength.openapi.validation',
+				errorCode: 'minLength.openapi.requestValidation',
 				location: 'headers',
 				message: 'should NOT be shorter than 3 characters',
 				path: '[\'x-something\']'
@@ -278,7 +278,7 @@ describe('validation', () => {
 		it('should fail with missing required query parameter', async () => {
 			const res = await request.get('/with-required-query-parameter').expect(400);
 			expect(res.body).to.deep.equal([{
-				errorCode: 'required.openapi.validation',
+				errorCode: 'required.openapi.requestValidation',
 				location: 'query',
 				message: 'should have required property \'something\'',
 				path: 'something'
@@ -288,7 +288,7 @@ describe('validation', () => {
 		it('should fail with bad optional query parameter', async () => {
 			const res = await request.get('/with-optional-query-parameter?something=a').expect(400);
 			expect(res.body).to.deep.equal([{
-				errorCode: 'minLength.openapi.validation',
+				errorCode: 'minLength.openapi.requestValidation',
 				location: 'query',
 				message: 'should NOT be shorter than 3 characters',
 				path: 'something'
@@ -311,7 +311,7 @@ describe('validation', () => {
 		it('should fail with bad body', async () => {
 			const res = await request.put('/with-body').send({ something: 'a' }).expect(400);
 			expect(res.body).to.deep.equal([{
-				errorCode: 'minLength.openapi.validation',
+				errorCode: 'minLength.openapi.requestValidation',
 				location: 'body',
 				message: 'should NOT be shorter than 3 characters',
 				path: 'something'
@@ -336,7 +336,7 @@ describe('validation', () => {
 		it('should fail at first middleware', async () => {
 			const res = await request.get('/nested-root/ab/nested-route/ghijklm').expect(400);
 			expect(res.body).to.deep.equal([{
-				errorCode: 'minLength.openapi.validation',
+				errorCode: 'minLength.openapi.requestValidation',
 				location: 'path',
 				message: 'should NOT be shorter than 3 characters',
 				path: 'something'
@@ -346,7 +346,7 @@ describe('validation', () => {
 		it('should fail at second middleware', async () => {
 			const res = await request.get('/nested-root/abcdef/nested-route/g').expect(400);
 			expect(res.body).to.deep.equal([{
-				errorCode: 'minLength.openapi.validation',
+				errorCode: 'minLength.openapi.requestValidation',
 				location: 'path',
 				message: 'should NOT be shorter than 3 characters',
 				path: 'something_else'
