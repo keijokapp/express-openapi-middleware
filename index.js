@@ -1,3 +1,4 @@
+const OpenAPIRequestCoercer = require('openapi-request-coercer').default;
 const OpenAPIRequestValidator = require('openapi-request-validator').default;
 
 
@@ -86,12 +87,14 @@ function apiOperation(operation) {
 		requestBody: operation.requestBody
 	};
 
+	const coercer = new OpenAPIRequestCoercer(op);
 	const validator = new OpenAPIRequestValidator(op);
 
 	const middleware = function(req, res, next) {
 
 		req.apiOperation = operation;
 
+		coercer.coerce(req);
 		const error = validator.validateRequest(req);
 
 		if(error) {

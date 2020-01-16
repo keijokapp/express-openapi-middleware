@@ -9,6 +9,7 @@
     "test": "mocha test"
   },
   "dependencies": {
+    "openapi-request-coercer": "^2.4.0",
     "openapi-request-validator": "^4.2.0"
   },
   "devDependencies": {

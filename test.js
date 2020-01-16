@@ -111,6 +111,29 @@ app.put('/with-body', apiOperation({
 	res.send();
 });
 
+app.put('/coerce/:something', apiOperation({
+	parameters: [{
+		in: 'path',
+		name: 'something',
+		required: true,
+		schema: {
+			type: 'integer'
+		}
+	}, {
+		in: 'query',
+		name: 'something',
+		required: true,
+		schema: {
+			type: 'array',
+			items: {
+				type: 'integer'
+			}
+		}
+	}],
+}), (req, res) => {
+	res.send();
+});
+
 /**
  * Nested routes
  */
@@ -327,6 +350,34 @@ describe('validation', () => {
 
 	});
 
+
+	describe('coerce', () => {
+
+		it('should succeed with good parameters', async () => {
+			const res = await request.put('/coerce/123.3?something=1,2,3').expect(200);
+		});
+
+		it('should fail with bad parameters', async () => {
+			const res = await request.put('/coerce/false?something=a,2,3').expect(400);
+			expect(res.body).to.deep.equal([
+				{
+					"errorCode": "type.openapi.requestValidation",
+					"location": "path",
+					"message": "should be integer",
+					"path": "something"
+				},
+				{
+					"errorCode": "type.openapi.requestValidation",
+					"location": "query",
+					"message": "should be integer",
+					"path": "something[0]"
+				}
+			])
+		});
+
+	});
+
+
 	describe('nested routes', () => {
 
 		it('should succeed with good parameters', async () => {
@@ -425,6 +476,21 @@ describe('spec generation', () => {
 							}
 						}
 					}
+				}
+			},
+			'/coerce/{something}': {
+				put: {
+					parameters: [{
+						in: 'path',
+						name: 'something',
+						required: true,
+						schema: { type: 'integer' }
+					}, {
+						in: 'query',
+						name: 'something',
+						required: true,
+						schema: { type: 'array', items: { type: 'integer' } }
+					}]
 				}
 			},
 			'/nested-root/{something}/nested-route/{something_else}': {
