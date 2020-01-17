@@ -5,6 +5,7 @@
   "main": "index.js",
   "author": "Keijo Kapp <keijo.kapp@gmail.com>",
   "license": "MIT",
+  "files": [ "index.js" ],
   "scripts": {
     "test": "mocha test"
   },
