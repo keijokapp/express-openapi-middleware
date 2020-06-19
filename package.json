@@ -7,7 +7,7 @@
   "license": "MIT",
   "files": [ "index.js" ],
   "scripts": {
-    "test": "mocha test"
+    "test": "node --experimental-modules node_modules/.bin/_mocha test"
   },
   "dependencies": {
     "openapi-request-coercer": "^2.4.0",
